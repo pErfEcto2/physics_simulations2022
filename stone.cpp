@@ -15,7 +15,7 @@ int main() {
     
     std::srand(time(0));
 
-    sf::Vector2f g = {0, 0.00000003};
+    sf::Vector2f g = {0, 3};
 
     Object obj(sf::Vector2f(10, sf::VideoMode::getDesktopMode().height - 10), sf::Color::Red, 20, g);
 
@@ -29,7 +29,8 @@ int main() {
 
     std::map<std::string, bool> keys = {
         {"leftMouse", false},
-        {"stop", false}
+        {"stop", false},
+        {"clear", true}
     };
 
     texts.push_back(textInit(sf::Text(), font, "Position ", 20, sf::Vector2f(10, 10)));
@@ -53,6 +54,10 @@ int main() {
 
                 if (event.key.code == sf::Keyboard::R) {
                     window.clear();
+                }
+
+                if (event.key.code == sf::Keyboard::C) {
+                    keys["clear"] = !keys["clear"];
                 }
             }
 
@@ -89,7 +94,7 @@ int main() {
         texts[4].setString("Time " + std::to_string(obj.getTime()));
         texts[5].setString("Last time " + std::to_string(obj.getLastTime()));
 
-        window.clear();
+        if(keys["clear"]) window.clear();
 
         for (sf::Text text: texts) {
             window.draw(text);

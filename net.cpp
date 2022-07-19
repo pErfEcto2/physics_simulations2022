@@ -15,6 +15,10 @@ sf::Vector2f operator*(sf::Vector2f const &v1, int const &n) {
     return sf::Vector2f(v1.x * n, v1.y * n);
 }
 
+sf::Vector2f operator*(sf::Vector2f const &v1, sf::Vector2f const &v2) {
+    return sf::Vector2f(v1.x * v2.x, v1.y * v2.y);
+}
+
 int main() {
     sf::RenderWindow window(sf::VideoMode(200, 200), "Net", sf::Style::Fullscreen);
     window.setFramerateLimit(60);
@@ -22,13 +26,17 @@ int main() {
     
     std::srand(time(0));
 
-    int WIDTH = 5; // width of the net
-    int HEIGHT = 4; // height of the net
+    int WIDTH = 10; // width of the net
+    int HEIGHT = 10; // height of the net
     int number = WIDTH * HEIGHT; // number of objects in the net
+    int offset = 50; // offset of the net from the screen
+    int size = 20; // size of the objects
 
-    float K = 0.1; // spring constant
-    float airDencity = 0.9;
-    float dTime = 0.001; // time step
+    float K = 40; // spring constant
+    float airDencity = 80;
+    float dTime = 0.00001; // time step
+
+    sf::Vector2i screenSize = sf::Vector2i(window.getSize().x, window.getSize().y);
     
     std::vector<Object> objects; // vector of objects
     std::chrono::milliseconds start = std::chrono::duration_cast<std::chrono::milliseconds>(
@@ -40,10 +48,10 @@ int main() {
             /*
             fill the vector of objects with points
             */
-            Object obj(sf::Vector2f((sf::VideoMode::getDesktopMode().width / WIDTH) * (i) + 50,
-                                     (sf::VideoMode::getDesktopMode().height / HEIGHT) * (j) + 50),
+            Object obj(sf::Vector2f((sf::VideoMode::getDesktopMode().width / WIDTH) * j + offset,
+                                     (sf::VideoMode::getDesktopMode().height / HEIGHT) * i + offset),
                                      sf::Color(rand() % 255, rand() % 255, rand() % 255),
-                                     20,
+                                     size,
                                      sf::Vector2f(0, 0));
             obj.isMovable(false);
             objects.push_back(obj);
@@ -72,6 +80,7 @@ int main() {
     texts.push_back(textInit(sf::Text(), font, "Air Dencity: ", 20, sf::Vector2f(10, 10)));
     texts.push_back(textInit(sf::Text(), font, "Clear: ", 20, sf::Vector2f(200, 10)));
     texts.push_back(textInit(sf::Text(), font, "Left mouse ", 20, sf::Vector2f(300, 10)));
+    texts.push_back(textInit(sf::Text(), font, "Energy ", 20, sf::Vector2f(500, 10)));
 
     while (window.isOpen()) {
         while (window.pollEvent(event)) {
@@ -95,10 +104,11 @@ int main() {
                 }
 
                 if (event.key.code == sf::Keyboard::R) {
-                    for (int i = 1; i < HEIGHT - 1; i++) {
-                        for (int j = 1; j < WIDTH - 1; j++) {
-                            objects[i * WIDTH + j].setPos(sf::Vector2f(sf::VideoMode::getDesktopMode().width  / WIDTH  * i + 50,
-                                                                       sf::VideoMode::getDesktopMode().height / HEIGHT * j + 50));
+                    for (int i = 0; i < HEIGHT; i++) {
+                        for (int j = 0; j < WIDTH; j++) {
+                            objects[i * WIDTH + j].setPos(sf::Vector2f(sf::VideoMode::getDesktopMode().width  / WIDTH  * j + offset,
+                                                                       sf::VideoMode::getDesktopMode().height / HEIGHT * i + offset),
+                                                                       true);
                             objects[i * WIDTH + j].setVel(sf::Vector2f(0, 0));
                         }
                     }
@@ -111,10 +121,11 @@ int main() {
                     if left mouse button is pressed, set the point, which contains cursor, to the mouse position
                     */
                     keys["leftMouse"] = true;
-                    sf::Vector2i mousePos = sf::Mouse::getPosition();
-                    for (int i = 1; i < HEIGHT - 1; i++) {
-                        for (int j = 1; j < WIDTH - 1; j++) {
-                            if (objects[i * WIDTH + j].getRect().contains(mousePos.x, mousePos.y)) {
+                    sf::Vector2f mousePos = sf::Vector2f(sf::Mouse::getPosition());
+                    for (int i = 0; i < HEIGHT; i++) {
+                        for (int j = 0; j < WIDTH; j++) {
+                            if (objects[i * WIDTH + j].contains(mousePos) &&
+                                i != 0 && j != 0 && i != HEIGHT - 1 && j != WIDTH - 1) {
                                 objects[i * WIDTH + j].isMovable(true);
                                 break;
                             }
@@ -142,7 +153,6 @@ int main() {
                     /*
                     move the point, which contains cursor
                     */
-                    //objects[i].setPos(sf::Vector2f(sf::Mouse::getPosition().x, objects[i].getPos().y)); // 1 dimension
                     objects[i * WIDTH + j].setPos(sf::Vector2f(sf::Mouse::getPosition())); // 2 dimensions
                 }
             }
@@ -158,8 +168,8 @@ int main() {
             std::chrono::system_clock::now().time_since_epoch()
         );
 
-        //if (finish - start > std::chrono::milliseconds(10) ) {
-        if (!keys["leftMouse"]) {
+        if (finish - start > std::chrono::milliseconds(10) ) {
+        //if (!keys["leftMouse"]) {
             /*
             move objects if left mouse is not pressed and find new distances
             */
@@ -172,17 +182,26 @@ int main() {
 
                     else {
 
-                        float dY1 = const_dy - (objects[i * WIDTH + j].getPos().y - objects[i * WIDTH + j - 1].getPos().y);
-                        float dY2 = (objects[i * WIDTH + j + 1].getPos().y - objects[i * WIDTH + j].getPos().y) - const_dy;
-                        float dY3 = const_dy - (objects[i * WIDTH + j].getPos().y - objects[(i - 1) * WIDTH + j].getPos().y);
-                        float dY4 = (objects[(i + 1) * WIDTH + j].getPos().y - objects[i * WIDTH + j].getPos().y) - const_dy;
-
                         float dX1 = const_dx - (objects[i * WIDTH + j].getPos().x - objects[i * WIDTH + j - 1].getPos().x);
                         float dX2 = (objects[i * WIDTH + j + 1].getPos().x - objects[i * WIDTH + j].getPos().x) - const_dx;
                         float dX3 = const_dx - (objects[i * WIDTH + j].getPos().x - objects[(i - 1) * WIDTH + j].getPos().x);
                         float dX4 = (objects[(i + 1) * WIDTH + j].getPos().x - objects[i * WIDTH + j].getPos().x) - const_dx;
 
+                        float dY1 = const_dy - (objects[i * WIDTH + j].getPos().y - objects[i * WIDTH + j - 1].getPos().y);
+                        float dY2 = (objects[i * WIDTH + j + 1].getPos().y - objects[i * WIDTH + j].getPos().y) - const_dy;
+                        float dY3 = const_dy - (objects[i * WIDTH + j].getPos().y - objects[(i - 1) * WIDTH + j].getPos().y);
+                        float dY4 = (objects[(i + 1) * WIDTH + j].getPos().y - objects[i * WIDTH + j].getPos().y) - const_dy;
+
                         sf::Vector2f force = sf::Vector2f(dX1 + dX2 + dX3 + dX4, dY1 + dY2 + dY3 + dY4) * K * dTime;
+                        
+                        if (keys["air"] &&
+                        abs(objects[i * WIDTH + j].getVel().x) > 0 &&
+                        abs(objects[i * WIDTH + j].getVel().y) > 0) {
+                            sf::Vector2f air = {objects[i * WIDTH + j].getVel().x / abs(objects[i * WIDTH + j].getVel().x),
+                                                objects[i * WIDTH + j].getVel().y / abs(objects[i * WIDTH + j].getVel().y)};
+                            
+                            force -= objects[i * WIDTH + j].getVel() * objects[i * WIDTH + j].getVel() * objects[i * WIDTH + j].getSize() * airDencity * air * dTime;
+                        }
 
                         forces.push_back(force);
                     }
@@ -190,10 +209,8 @@ int main() {
             }
 
             for (int i = 0; i < number; i++) {
-                objects[i].setVel(forces[i]);
-                //objects[i].move(forces[i]);
+                objects[i].setAcc(forces[i]);
                 objects[i].move();
-                //objects[i].setVel(sf::Vector2f(0, 0));
             }
 
             start = finish;
@@ -201,16 +218,21 @@ int main() {
 
         if (keys["clear"]) window.clear();
 
+        double energy = 0;
+        for (Object &obj: objects) {
+            energy += obj.getMass() * pow(getVectorLength(obj.getVel()), 2) / 2 +
+                      K * getVectorLength(obj.getLastPos() - obj.getPos()) +
+                      obj.getMass() * 1 * (screenSize.y - obj.getPos().y);
+            obj.draw(window);
+        }
+
         texts[0].setString("Air resistance: " + std::to_string(keys["air"] ? 1 : 0));
         texts[1].setString("Clear: " + std::to_string(keys["clear"] ? 1 : 0));
         texts[2].setString("Left mouse: " + std::to_string(keys["leftMouse"] ? 1 : 0));
+        texts[3].setString("Energy: " + std::to_string(energy / 1e4));
 
         for (sf::Text &text: texts) {
             window.draw(text);
-        }
-        
-        for (Object &obj: objects) {
-            obj.draw(window);
         }
 
         window.display();

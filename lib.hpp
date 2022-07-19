@@ -40,6 +40,7 @@ class Object {
         sf::Color getColor();
         int getMass();
         void setPos(sf::Vector2f p);
+        void setPos(sf::Vector2f p, bool f);
         void setAcc(sf::Vector2f a);
         void setColor(sf::Color c);
         void setMass(double m);
@@ -48,13 +49,12 @@ class Object {
         int getTime();
         int getLastTime();
         void calculateAcc();
-        float getScalarVector();
-        sf::FloatRect getRect();
         void isMovable(bool f);
         bool isMovable();
         void move(sf::Vector2f f);
         void move();
         int getSize();
+        bool contains(sf::Vector2f p);
 };
 
 sf::Text textInit(sf::Text text, sf::Font &font, std::string s, int size, sf::Vector2f pos); 

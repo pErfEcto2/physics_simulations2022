@@ -32,6 +32,8 @@ Object::Object(sf::Vector2f p, sf::Color c, int m, sf::Vector2f g) {
     mass = m;
     size = m;
     g = g;
+    vel = sf::Vector2f(0, 0);
+    lastPos = pos;
     rect.setSize(sf::Vector2f(size, size));
     rect.setPosition(pos);
     rect.setFillColor(color);
@@ -76,10 +78,6 @@ void Object::update() {
     rect.setPosition(pos);
 }
 
-float Object::getScalarVector() {
-    return sqrt(vel.x * vel.x + vel.y * vel.y);
-}
-
 sf::Text textInit(sf::Text text, sf::Font &font, std::string s, int size, sf::Vector2f pos) {
     text.setFont(font);
     text.setString(s);
@@ -105,10 +103,6 @@ sf::Vector2f Object::getVel() {
     return vel;
 }
 
-sf::FloatRect Object::getRect() {
-    return rect.getGlobalBounds();
-}
-
 sf::Color Object::getColor() {
     return color;
 }
@@ -123,6 +117,13 @@ void Object::isMovable(bool f) {
 
 bool Object::isMovable() {
     return movable;
+}
+
+void Object::setPos(sf::Vector2f p, bool f) {
+    pos = p;
+    if (f) {
+        lastPos = pos;
+    }
 }
 
 void Object::setPos(sf::Vector2f p) {
@@ -156,7 +157,7 @@ void Object::setVel(sf::Vector2f v) {
 
 void Object::setAcc(sf::Vector2f a) {
     acc = a;
-    vel += acc * (t - lastTime) * 17000;
+    vel += acc;
 }
 
 int Object::getTime() {
@@ -171,8 +172,13 @@ sf::Vector2f Object::getLastPos() {
     return lastPos;
 }
 
+bool Object::contains(sf::Vector2f p) {
+    return rect.getGlobalBounds().contains(p);
+}
+
 void Object::setColor(sf::Color c) {
     color = c;
+    rect.setFillColor(color);
 }
 
 void Object::setMass(double m) {
