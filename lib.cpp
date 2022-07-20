@@ -26,6 +26,20 @@ float getVectorLength(sf::Vector2f const &v) {
     return sqrt(pow(v.x, 2) + pow(v.y, 2));
 }
 
+sf::Vector2f abs(sf::Vector2f v) {
+    return sf::Vector2f(abs(v.x), abs(v.y));
+}
+
+sf::Vector2f clamp(sf::Vector2f v, float min, float max) {
+    return sf::Vector2f(clamp(v.x, min, max), clamp(v.y, min, max));
+}
+
+sf::Vector2f defineLine(sf::Vector2f p1, sf::Vector2f p2) {
+    float dist = getDistance(p1, p2);
+    float angle = atan2(p2.y - p1.y, p2.x - p1.x);
+    return sf::Vector2f(dist, angle);
+}
+
 Object::Object(sf::Vector2f p, sf::Color c, int m, sf::Vector2f g) {
     pos = p;
     color = c;
@@ -137,13 +151,17 @@ void Object::setPos(sf::Vector2f p) {
 }
 
 void Object::move(sf::Vector2f f) {
-    pos += f / mass;
-    rect.setPosition(pos);
+    if (!stop) {
+        pos += f / mass;
+        rect.setPosition(pos);
+    }
 }
 
 void Object::move() {
-    pos += vel;
-    rect.setPosition(pos);
+    if (!stop) {
+        pos += vel;
+        rect.setPosition(pos);
+    }
 }
 
 void Object::calculateAcc() {
@@ -152,7 +170,12 @@ void Object::calculateAcc() {
 }
 
 void Object::setVel(sf::Vector2f v) {
-    vel = v;
+    if (abs(v.x) > 0.001 && abs(v.y) > 0.001) {
+        vel = v;
+    }
+    else {
+        vel = sf::Vector2f(0, 0);
+    }
 }
 
 void Object::setAcc(sf::Vector2f a) {
@@ -172,6 +195,14 @@ sf::Vector2f Object::getLastPos() {
     return lastPos;
 }
 
+void Object::switchStop() {
+    stop = !stop;
+}
+
+void Object::setStop(bool f) {
+    stop = f;
+}
+
 bool Object::contains(sf::Vector2f p) {
     return rect.getGlobalBounds().contains(p);
 }
@@ -187,4 +218,47 @@ void Object::setMass(double m) {
 
 int Object::getSize() {
     return size;
+}
+
+Rect::Rect(sf::Vector2i i, sf::Vector2f p1, sf::Vector2f p2, sf::Color c) {
+    color = c;
+    vert[0].position = p1;
+    vert[1].position = p2;
+    vert[0].color = color;
+    vert[1].color = color;
+    id = i;
+}
+
+Rect::~Rect() {}
+
+void Rect::setPos(sf::Vector2f p1, sf::Vector2f p2) {
+    vert[0].position = p1;
+    vert[1].position = p2;
+}
+
+void Rect::draw(sf::RenderWindow &w) {
+    w.draw(vert, 2, sf::Lines);
+}
+
+sf::Vector2i Rect::getId() {
+    return id;
+}
+
+void Rect::setColor(sf::Color c) {
+    color = c;
+    vert[0].color = color;
+    vert[1].color = color;
+}
+
+FPS::FPS() {
+    lastTime = 0;
+}
+
+int FPS::getFPS() {
+    currentTime = clock.restart().asSeconds();
+    return 1.f / (currentTime - lastTime);
+}
+
+void FPS::update() {
+    lastTime = currentTime;
 }
