@@ -6,6 +6,7 @@
 #include "chrono"
 
 
+//---------------------------OPERATORS-----------------------------------------
 sf::Vector2f operator*(sf::Vector2f const &v, double const &n) {
     return sf::Vector2f(v.x * n, v.y * n);
 }
@@ -14,15 +15,16 @@ sf::Vector2f operator/(sf::Vector2f const &v, double const &n) {
     return sf::Vector2f(v.x / n, v.y / n);
 }
 
+//------------------------------------FUNCTIONS------------------------------------
 float clamp(float const &n, float const &min, float const &max) {
     return std::max(min, std::min(n, max));
 }
 
-float getDistance(sf::Vector2f const &a, sf::Vector2f const &b) {
+float getDistance(sf::Vector2f const &a, sf::Vector2f const &b) { // distance between two points
     return sqrt(pow(a.x - b.x, 2) + pow(a.y - b.y, 2));
 }
 
-float getVectorLength(sf::Vector2f const &v) {
+float getVectorLength(sf::Vector2f const &v) { // length of a vector
     return sqrt(pow(v.x, 2) + pow(v.y, 2));
 }
 
@@ -34,16 +36,28 @@ sf::Vector2f clamp(sf::Vector2f v, float min, float max) {
     return sf::Vector2f(clamp(v.x, min, max), clamp(v.y, min, max));
 }
 
-sf::Vector2f defineLine(sf::Vector2f p1, sf::Vector2f p2) {
-    float dist = getDistance(p1, p2);
-    float angle = atan2(p2.y - p1.y, p2.x - p1.x);
-    return sf::Vector2f(dist, angle);
+double clamp(double n, double min, double max) {
+    return std::max(min, std::min(n, max));
 }
 
+sf::Text textInit(sf::Text text, sf::Font &font, int size, sf::Vector2f pos) {
+    text.setFont(font);
+    text.setCharacterSize(size);
+    text.setFillColor(sf::Color::White);
+    text.setPosition(pos);
+    return text;
+}
+
+sf::Vector2i const getScreenSize() {
+    return sf::Vector2i(sf::VideoMode::getDesktopMode().width,
+                        sf::VideoMode::getDesktopMode().height);
+}
+
+//----------------------------------OBJECT CLASS----------------------------------
 Object::Object(sf::Vector2f p, sf::Color c, int m, sf::Vector2f g) {
     pos = p;
     color = c;
-    mass = m;
+    mass = m * 2;
     size = m;
     g = g;
     vel = sf::Vector2f(0, 0);
@@ -92,15 +106,6 @@ void Object::update() {
     rect.setPosition(pos);
 }
 
-sf::Text textInit(sf::Text text, sf::Font &font, std::string s, int size, sf::Vector2f pos) {
-    text.setFont(font);
-    text.setString(s);
-    text.setCharacterSize(size);
-    text.setFillColor(sf::Color::White);
-    text.setPosition(pos);
-    return text;
-}
-
 void Object::draw(sf::RenderWindow &w) {
     w.draw(rect);
 }
@@ -143,7 +148,6 @@ void Object::setPos(sf::Vector2f p, bool f) {
 void Object::setPos(sf::Vector2f p) {
     lastPos = pos;
     pos = p;
-    
     if (std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::system_clock::now().time_since_epoch()).count() - t > 100000) {
         lastTime = t;
         t = std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::system_clock::now().time_since_epoch()).count();
@@ -220,6 +224,7 @@ int Object::getSize() {
     return size;
 }
 
+//-------------------------------------------RECT CLASS-------------------------------------------
 Rect::Rect(sf::Vector2i i, sf::Vector2f p1, sf::Vector2f p2, sf::Color c) {
     color = c;
     vert[0].position = p1;
@@ -250,15 +255,21 @@ void Rect::setColor(sf::Color c) {
     vert[1].color = color;
 }
 
+//-------------------------------FPS CLASS---------------------------------------
 FPS::FPS() {
     lastTime = 0;
+    cnt = 0;
+    fps = 0;
 }
+
+FPS::~FPS() {}
 
 int FPS::getFPS() {
-    currentTime = clock.restart().asSeconds();
-    return 1.f / (currentTime - lastTime);
-}
-
-void FPS::update() {
-    lastTime = currentTime;
+    cnt += 1;
+    if (cnt % 10 == 0) {
+        fps = 10.f / (clock.restart().asSeconds() - lastTime);
+        lastTime = clock.restart().asSeconds();
+        cnt = 0;
+    }
+    return fps;
 }

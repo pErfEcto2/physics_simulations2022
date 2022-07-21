@@ -5,15 +5,22 @@
 #include "math.h"
 #include "chrono"
 
-float getDistance(sf::Vector2f const &a, sf::Vector2f const &b);
+//---------------------------FUNCTIONS-----------------------------------------
+float getDistance(sf::Vector2f const &a, sf::Vector2f const &b); // distance between two points
 
-float getVectorLength(sf::Vector2f const &v);
+float getVectorLength(sf::Vector2f const &v); // length of a vector
 
-sf::Text textInit(sf::Text text, sf::Font &font, std::string s, int size, sf::Vector2f pos);
+sf::Text textInit(sf::Text text, sf::Font &font, int size, sf::Vector2f pos);
 
 sf::Vector2f abs(sf::Vector2f v);
 
 sf::Vector2f clamp(sf::Vector2f v, float min, float max);
+
+double clamp(double n, double min, double max);
+
+sf::Vector2i const getScreenSize();
+
+//----------------------------------OBJECT CLASS----------------------------------
 class Object {
     private:
         sf::Vector2f pos;
@@ -23,9 +30,7 @@ class Object {
         int size;
         sf::Color color;
         int mass;
-        sf::Vector2f screenSize = {sf::VideoMode::getDesktopMode().width,
-                                   sf::VideoMode::getDesktopMode().height};
-        float k = 0.97;
+        sf::Vector2f screenSize = sf::Vector2f(getScreenSize());
         sf::Vector2f lastPos;
         int t = std::chrono::duration_cast<std::chrono::microseconds>(
             std::chrono::system_clock::now().time_since_epoch()
@@ -65,14 +70,14 @@ class Object {
         void setStop(bool f);
 };
 
+//----------------------------------RECT CLASS----------------------------------
 class Rect {
     private:
         sf::Vector2f pos;
         sf::Vertex vert[2];
         sf::Vector2i size;
         sf::Color color;
-        sf::Vector2f screenSize = {sf::VideoMode::getDesktopMode().width,
-                                   sf::VideoMode::getDesktopMode().height};
+        sf::Vector2f screenSize = sf::Vector2f(getScreenSize());
         sf::Vector2f distAndAngle;
         sf::Vector2i id;
     
@@ -85,15 +90,17 @@ class Rect {
         sf::Vector2i getId();
 };
 
+//----------------------------------FPS CLASS----------------------------------
 class FPS {
     private:
         sf::Clock clock;
         float lastTime;
         float currentTime;
+        int fps;
+        int cnt;
 
     public:
         FPS();
         ~FPS();
         int getFPS();
-        void update();
 };
