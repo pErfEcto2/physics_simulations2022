@@ -54,14 +54,11 @@ sf::Vector2i const getScreenSize() {
 }
 
 //----------------------------------OBJECT CLASS----------------------------------
-Object::Object(sf::Vector2f p, sf::Color c, int m, sf::Vector2f g) {
+Object::Object(sf::Vector2f p, sf::Color c, int m) {
     pos = p;
     color = c;
-    mass = m * 2;
     size = m;
-    g = g;
     vel = sf::Vector2f(0, 0);
-    lastPos = pos;
     rect.setSize(sf::Vector2f(size, size));
     rect.setPosition(pos);
     rect.setFillColor(color);
@@ -70,48 +67,8 @@ Object::Object(sf::Vector2f p, sf::Color c, int m, sf::Vector2f g) {
 
 Object::~Object() {}
 
-void Object::update() {
-    if (movable) {
-        pos += vel;
-
-        if (pos.x - size / 2 < 0) {
-            vel.x *= -1;
-            pos.x = size / 2;
-        }
-
-        if (pos.x + size / 2 > screenSize.x) {
-            vel.x *= -1;
-            pos.x = screenSize.x - size / 2;
-        }
-
-        if (pos.y - size / 2 < 0) {
-            vel.y *= -1;
-            if (abs(vel.x) < 0.1) {
-                vel.x = 0;
-            }
-            pos.y = size / 2;
-        }
-
-        if (pos.y + size / 2 > screenSize.y) {
-            vel.y *= -1;
-            if (abs(vel.x) < 0.1) {
-                vel.x = 0;
-            }
-            pos.y = screenSize.y - size / 2;
-            if (abs(vel.y) < 0.1) {
-                vel.y = 0;
-            }
-        }
-    }
-    rect.setPosition(pos);
-}
-
 void Object::draw(sf::RenderWindow &w) {
     w.draw(rect);
-}
-
-sf::Vector2f Object::getAcc() {
-    return acc;
 }
 
 sf::Vector2f Object::getPos() {
@@ -122,14 +79,6 @@ sf::Vector2f Object::getVel() {
     return vel;
 }
 
-sf::Color Object::getColor() {
-    return color;
-}
-
-int Object::getMass() {
-    return mass;
-}
-
 void Object::isMovable(bool f) {
     movable = f;
 }
@@ -138,27 +87,8 @@ bool Object::isMovable() {
     return movable;
 }
 
-void Object::setPos(sf::Vector2f p, bool f) {
-    pos = p;
-    if (f) {
-        lastPos = pos;
-    }
-}
-
 void Object::setPos(sf::Vector2f p) {
-    lastPos = pos;
     pos = p;
-    if (std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::system_clock::now().time_since_epoch()).count() - t > 100000) {
-        lastTime = t;
-        t = std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::system_clock::now().time_since_epoch()).count();
-    }
-}
-
-void Object::move(sf::Vector2f f) {
-    if (!stop) {
-        pos += f / mass;
-        rect.setPosition(pos);
-    }
 }
 
 void Object::move() {
@@ -168,9 +98,8 @@ void Object::move() {
     }
 }
 
-void Object::calculateAcc() {
-    acc = (pos - lastPos) / ((t - lastTime)) * 17000;
-    vel += acc;
+void Object::switchStop() {
+    stop = !stop;
 }
 
 void Object::setVel(sf::Vector2f v) {
@@ -187,37 +116,8 @@ void Object::setAcc(sf::Vector2f a) {
     vel += acc;
 }
 
-int Object::getTime() {
-    return t;
-}
-
-int Object::getLastTime() {
-    return lastTime;
-}
-
-sf::Vector2f Object::getLastPos() {
-    return lastPos;
-}
-
-void Object::switchStop() {
-    stop = !stop;
-}
-
-void Object::setStop(bool f) {
-    stop = f;
-}
-
 bool Object::contains(sf::Vector2f p) {
     return rect.getGlobalBounds().contains(p);
-}
-
-void Object::setColor(sf::Color c) {
-    color = c;
-    rect.setFillColor(color);
-}
-
-void Object::setMass(double m) {
-    mass = m;
 }
 
 int Object::getSize() {
@@ -247,12 +147,6 @@ void Rect::draw(sf::RenderWindow &w) {
 
 sf::Vector2i Rect::getId() {
     return id;
-}
-
-void Rect::setColor(sf::Color c) {
-    color = c;
-    vert[0].color = color;
-    vert[1].color = color;
 }
 
 //-------------------------------FPS CLASS---------------------------------------

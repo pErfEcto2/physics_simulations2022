@@ -34,11 +34,11 @@ int main() {
     
     std::srand(time(0));
 
-    int WIDTH = 50; // width of the net
-    int HEIGHT = 50; // height of the net
+    int WIDTH = 150; // width of the net
+    int HEIGHT = 150; // height of the net
     int number = WIDTH * HEIGHT; // number of objects in the net
     int offset = 30; // offset of the net from the screen
-    int size = 5; // size of the objects
+    int size = 10; // size of the objects
 
     float K = 40; // spring constant
     float airDencity = 10;
@@ -62,8 +62,7 @@ int main() {
             Object obj(sf::Vector2f((sf::VideoMode::getDesktopMode().width / WIDTH) * j + offset,
                                      (sf::VideoMode::getDesktopMode().height / HEIGHT) * i + offset),
                                      sf::Color(30 + rand() % 225, 30 + rand() % 225, 30 + rand() % 225),
-                                     size,
-                                     sf::Vector2f(0, 0));
+                                     size);
             obj.isMovable(false);
             objects.push_back(obj);
         }
@@ -109,8 +108,9 @@ int main() {
 
     sf::Font font;
 
-    if (!font.loadFromFile("arial.ttf")) {
+    if (!font.loadFromFile("src/fonts/arial.ttf")) {
         std::cout << "Error loading font" << std::endl;
+        window.close();
         exit(1);
     }
 
@@ -119,8 +119,7 @@ int main() {
     texts.push_back(textInit(sf::Text(), font, 20, sf::Vector2f(10, 10)));
     texts.push_back(textInit(sf::Text(), font, 20, sf::Vector2f(200, 10)));
     texts.push_back(textInit(sf::Text(), font, 20, sf::Vector2f(300, 10)));
-    //texts.push_back(textInit(sf::Text(), font, 20, sf::Vector2f(500, 10)));
-    texts.push_back(textInit(sf::Text(), font, 20, sf::Vector2f(700, 10)));
+    texts.push_back(textInit(sf::Text(), font, 20, sf::Vector2f(400, 10)));
     texts.push_back(textInit(sf::Text(), font, 20, sf::Vector2f(1200, 10)));
 
     FPS fps;
@@ -152,10 +151,8 @@ int main() {
                             Set base position for all points
                             */
                             objects[i * WIDTH + j].setPos(sf::Vector2f(sf::VideoMode::getDesktopMode().width  / WIDTH  * j + offset,
-                                                                       sf::VideoMode::getDesktopMode().height / HEIGHT * i + offset),
-                                                                       true);
+                                                                       sf::VideoMode::getDesktopMode().height / HEIGHT * i + offset));
                             objects[i * WIDTH + j].setVel(sf::Vector2f(0, 0));
-                            objects[i * WIDTH + j].setStop(false);
                         }
                     }
                 }
@@ -222,12 +219,6 @@ int main() {
             }
         }
 
-        if (!hotKeys["stop"]) {
-            for (Object &obj: objects) {
-                obj.update();
-            }
-        }
-
         std::chrono::milliseconds finish = std::chrono::duration_cast<std::chrono::milliseconds>(
             std::chrono::system_clock::now().time_since_epoch()
         );
@@ -287,12 +278,7 @@ int main() {
         for (Rect &rect: rects) {
             rect.draw(window);
         }
-
-        double energy = 0;
         for (Object &obj: objects) {
-            energy += obj.getMass() * pow(getVectorLength(obj.getVel()), 2) / 2 +
-                      K * getVectorLength(obj.getLastPos() - obj.getPos()) +
-                      obj.getMass() * 1 * (screenSize.y - obj.getPos().y);
             obj.draw(window);
         }
         // finish - start =  20 +-1 ms (150 * 150  objects)
@@ -300,7 +286,6 @@ int main() {
         texts[0].setString("Air resistance: " + std::to_string(hotKeys["air"] ? 1 : 0));
         texts[1].setString("Clear: " + std::to_string(hotKeys["clear"] ? 1 : 0));
         texts[2].setString("Left mouse: " + std::to_string(hotKeys["leftMouse"] ? 1 : 0));
-        //texts[3].setString("Energy: " + std::to_string(energy / 1e4));
         texts[3].setString("Time delta: " + std::to_string(dTime));
         texts[4].setString("FPS: " + std::to_string(fps.getFPS()));
 

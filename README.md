@@ -8,8 +8,6 @@ To start:
 
 `make build`
 
-Then choose, what do you want to watch:
-
-`./net` or `./stone`
+`./net`
 
 (Tested on Ubuntu 20.04)
