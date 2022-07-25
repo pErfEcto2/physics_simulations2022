@@ -122,6 +122,10 @@ void Knot::switchStop() {
     stop = !stop;
 }
 
+void Knot::switchStop(bool f) {
+    stop = f;
+}
+
 void Knot::setVel(sf::Vector2f v) {
     vel = v;
 }

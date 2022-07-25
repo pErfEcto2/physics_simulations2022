@@ -56,7 +56,7 @@ int main() {
     int size = 20; // size of the knots
 
     float K = 40; // spring constant
-    float airDencity = 10;
+    float airDencity = 20;
     float dTime = 1e-4; // time step
 
     sf::Vector2f screenSize = getScreenSize();
@@ -163,6 +163,7 @@ int main() {
                             knots[i * WIDTH + j].setPos(sf::Vector2f(sf::VideoMode::getDesktopMode().width  / WIDTH  * j + offset,
                                                                        sf::VideoMode::getDesktopMode().height / HEIGHT * i + offset));
                             knots[i * WIDTH + j].setVel(sf::Vector2f(0, 0));
+                            knots[i * WIDTH + j].switchStop(false);
                         }
                     }
                 }
