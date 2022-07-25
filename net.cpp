@@ -56,7 +56,7 @@ int main() {
     int size = 10; // size of the knots
 
     float K = 40; // spring constant
-    float airDencity = 20;
+    float airDencity = 10;
     float dTime = 1e-4; // time step
 
     sf::Vector2f screenSize = getScreenSize();
@@ -219,7 +219,7 @@ int main() {
                 Increase or decrease the dTime variable via mouse wheel
                 */
                 dTime += event.mouseWheelScroll.delta * 2 / 1e5;
-                dTime = clamp(dTime, 1e-4, 1e-3);
+                dTime = clamp(dTime, 1e-4,  5 * 1e-4);
             }
         }
 
