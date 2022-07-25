@@ -1,12 +1,12 @@
-Phisics simulation
+Physics simulation
 
 To start:
 
 `sudo apt install libsfml-dev make g++`
 
-`git clone https://github.com/pErfEcto2/math_and_phisics2022`
+`git clone git@github.com:pErfEcto2/physics_simulations2022.git`
 
-`cd math_and_phisics`
+`cd physics_simulations2022`
 
 `make build`
 
