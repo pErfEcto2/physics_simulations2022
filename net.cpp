@@ -49,11 +49,11 @@ int main() {
     
     std::srand(time(0));
 
-    int WIDTH = 10; // width of the net
-    int HEIGHT = 10; // height of the net
+    int WIDTH = 100; // width of the net
+    int HEIGHT = 100; // height of the net
     int number = WIDTH * HEIGHT; // number of knots in the net
     int offset = 30; // offset of the net from the top and left sides on the screen
-    int size = 20; // size of the knots
+    int size = 10; // size of the knots
 
     float K = 40; // spring constant
     float airDencity = 20;
@@ -292,8 +292,10 @@ int main() {
                 /*
                 Move all knots
                 */
-                knots[i].setAcc(forces[i]);
-                knots[i].move();
+               if (!knots[i].isStop() && !knots[i].isMovable()) {
+                    knots[i].setAcc(forces[i]);
+                    knots[i].move();
+               }
             }
 
             for (Connection &rect: connections) {

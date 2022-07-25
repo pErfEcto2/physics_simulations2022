@@ -56,6 +56,7 @@ class Knot {
         bool contains(sf::Vector2f p);
         void switchStop();
         void switchStop(bool f);
+        bool isStop();
 };
 
 

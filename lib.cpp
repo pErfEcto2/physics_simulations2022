@@ -122,6 +122,10 @@ void Knot::switchStop() {
     stop = !stop;
 }
 
+bool Knot::isStop() {
+    return stop;
+}
+
 void Knot::switchStop(bool f) {
     stop = f;
 }
