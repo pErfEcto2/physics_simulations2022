@@ -89,8 +89,6 @@ class FPS {
     */
     private:
         sf::Clock clock;
-        float lastTime;
-        float currentTime;
         int fps;
         int cnt;
 

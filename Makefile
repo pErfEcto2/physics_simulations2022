@@ -1,14 +1,15 @@
 mainFile = net.cpp
 libFile = lib.cpp
+comp = "g++-8"
 
 lib: $(libFile)
-	g++ -c $(libFile)
+	$(comp) -c $(libFile)
 
 net: $(mainFile)
-	g++ -c $(mainFile)
+	$(comp) -c $(mainFile)
 
 build: lib.o net.o
-	g++ lib.o net.o -lsfml-graphics -lsfml-window -lsfml-system -Ofast -o net
+	$(comp) lib.o net.o -lsfml-graphics -lsfml-window -lsfml-system -Ofast -o net
 
 clear:
 	rm net net.o lib.o

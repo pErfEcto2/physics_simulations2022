@@ -176,7 +176,6 @@ sf::Vector2i Connection::getId() {
 
 //-------------------------------FPS CLASS---------------------------------------
 FPS::FPS() {
-    lastTime = 0;
     cnt = 0;
     fps = 0;
 }
@@ -186,8 +185,7 @@ FPS::~FPS() {}
 int FPS::getFPS() {
     cnt += 1;
     if (cnt % 10 == 0) {
-        fps = 10.f / (clock.restart().asSeconds() - lastTime);
-        lastTime = clock.restart().asSeconds();
+        fps = 10.f / (clock.restart().asSeconds());
         cnt = 0;
     }
     return fps;

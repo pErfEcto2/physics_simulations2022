@@ -44,18 +44,19 @@ bool operator>(sf::Vector2f const &v1, double const &n) {
 
 int main() {
     sf::RenderWindow window(sf::VideoMode(200, 200), "Net", sf::Style::Fullscreen);
-    window.setFramerateLimit(60);
+    window.setFramerateLimit(90);
+    window.setVerticalSyncEnabled(true);
     sf::Event event;
     
     std::srand(time(0));
 
-    int WIDTH = 100; // width of the net
-    int HEIGHT = 100; // height of the net
+    int WIDTH = 5; // width of the net
+    int HEIGHT = 5; // height of the net
     int number = WIDTH * HEIGHT; // number of knots in the net
     int offset = 30; // offset of the net from the top and left sides on the screen
     int size = 10; // size of the knots
 
-    float K = 40; // spring constant
+    float K = 5; // spring constant
     float airDencity = 10;
     float dTime = 1e-4; // time step
 
@@ -78,7 +79,6 @@ int main() {
                                      (sf::VideoMode::getDesktopMode().height / HEIGHT) * i + offset),
                                      sf::Color(15 + rand() % 240, 15 + rand() % 240, 15 + rand() % 240),
                                      size);
-            knot.isMovable(false);
             knots.push_back(knot);
         }
     }
@@ -108,10 +108,6 @@ int main() {
         }
     }
 
-    // distances between horizontal and vertical knots
-    float const_dx = sf::VideoMode::getDesktopMode().width / WIDTH;
-    float const_dy = sf::VideoMode::getDesktopMode().height / HEIGHT;
-
     // hotkeys
     std::map<std::string, bool> hotKeys = {
         {"leftMouse", false},
@@ -122,7 +118,7 @@ int main() {
 
     sf::Font font;
 
-    if (!font.loadFromFile("src/fonts/arial.ttf")) {
+    if (!font.loadFromFile("arial.ttf")) {
         std::cout << "Error loading font" << std::endl;
         window.close();
         exit(1);
@@ -230,6 +226,7 @@ int main() {
                     Move the point, which contains cursor
                     */
                     knots[i * WIDTH + j].setPos(sf::Vector2f(sf::Mouse::getPosition())); // 2 dimensions
+                    knots[i * WIDTH +j].setVel(sf::Vector2f(0, 0));
                 }
             }
         }
@@ -248,7 +245,7 @@ int main() {
             */
             for (int i = 0; i < HEIGHT; i++) {
                 for (int j = 0; j < WIDTH; j++) {
-                    if (i == 0 || i == HEIGHT - 1 || j == 0 || j == WIDTH - 1) {
+                    if (i == 0 || j == 0 || i == HEIGHT - 1 || j == WIDTH - 1) {
                         /*
                         If point is on the border,
                         dont move it
@@ -256,34 +253,32 @@ int main() {
                         forces[i * WIDTH + j] = sf::Vector2f(0, 0);
                     }
                     else {
-                        /*
-                        New distances between knots
-                        */
-                        sf::Vector2f dXY1 = {const_dx - (knots[i * WIDTH + j].getPos().x - knots[i * WIDTH + j - 1].getPos().x),
-                                             const_dy - (knots[i * WIDTH + j].getPos().y - knots[i * WIDTH + j - 1].getPos().y)};
-                        sf::Vector2f dXY2 = {(knots[i * WIDTH + j + 1].getPos().x - knots[i * WIDTH + j].getPos().x) - const_dx,
-                                             (knots[i * WIDTH + j + 1].getPos().y - knots[i * WIDTH + j].getPos().y) - const_dy};
-                        sf::Vector2f dXY3 = {const_dx - (knots[i * WIDTH + j].getPos().x - knots[(i - 1) * WIDTH + j].getPos().x),
-                                             const_dy - (knots[i * WIDTH + j].getPos().y - knots[(i - 1) * WIDTH + j].getPos().y)};
-                        sf::Vector2f dXY4 = {(knots[(i + 1) * WIDTH + j].getPos().x - knots[i * WIDTH + j].getPos().x) - const_dx,
-                                             (knots[(i + 1) * WIDTH + j].getPos().y - knots[i * WIDTH + j].getPos().y) - const_dy};
+
+                        sf::Vector2f dXY1 = {(knots[i * WIDTH + j].getPos().x - knots[i * WIDTH + j - 1].getPos().x),
+                                             (knots[i * WIDTH + j].getPos().y - knots[i * WIDTH + j - 1].getPos().y)};
+                        sf::Vector2f dXY2 = {(knots[i * WIDTH + j + 1].getPos().x - knots[i * WIDTH + j].getPos().x),
+                                             (knots[i * WIDTH + j + 1].getPos().y - knots[i * WIDTH + j].getPos().y)};
+                        sf::Vector2f dXY3 = {(knots[i * WIDTH + j].getPos().x - knots[(i - 1) * WIDTH + j].getPos().x),
+                                             (knots[i * WIDTH + j].getPos().y - knots[(i - 1) * WIDTH + j].getPos().y)};
+                        sf::Vector2f dXY4 = {(knots[(i + 1) * WIDTH + j].getPos().x - knots[i * WIDTH + j].getPos().x),
+                                             (knots[(i + 1) * WIDTH + j].getPos().y - knots[i * WIDTH + j].getPos().y)};
 
                         /*
                         Calculate force for a knot
                         */
-                        sf::Vector2f force = (dXY1 + dXY2 + dXY3 + dXY4) * K * dTime;
+                        sf::Vector2f force = (dXY2 + dXY4 - dXY1 - dXY3) * K * dTime;
                         
                         if (hotKeys["air"] && abs(knots[i * WIDTH + j].getVel().x) > 0 && abs(knots[i * WIDTH + j].getVel().y) > 0) {
                             /*
                             If dencity of the air is enabled,
-                            add air resistance to the force
+                            add air resistance to the forces
                             */
                             sf::Vector2f air = {knots[i * WIDTH + j].getVel().x / abs(knots[i * WIDTH + j].getVel().x),
                                                 knots[i * WIDTH + j].getVel().y / abs(knots[i * WIDTH + j].getVel().y)};
                             
                             force -= knots[i * WIDTH + j].getVel() * knots[i * WIDTH + j].getVel() * knots[i * WIDTH + j].getSize() * airDencity * air * dTime;
                         }
-                        forces[i * WIDTH + j] = clamp(force, -10.0f, 10.0f);
+                        forces[i * WIDTH + j] = force;
                     }
                 }
             }
